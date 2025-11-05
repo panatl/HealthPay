@@ -1,8 +1,7 @@
 extend schema 
-  @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@shareable", "@external", "@requires", "@provides"])
+  @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@external", "@requires", "@provides"])
 
 scalar BigDecimal
-scalar DateTime
 
 enum ClaimStatus {
   SUBMITTED
@@ -13,7 +12,7 @@ enum ClaimStatus {
   REQUIRES_MANUAL_REVIEW
 }
 
-enum ErrorType {
+enum PaymentErrorType {
   DUPLICATE_CLAIM
   INVALID_AMOUNT
   MISSING_INFORMATION
@@ -63,7 +62,7 @@ type Claim @key(fields: "id") {
   patientId: String!
   providerId: String!
   amount: BigDecimal!
-  submittedAt: DateTime!
+  submittedAt: String!
   status: ClaimStatus!
   diagnosisCodes: [String!]!
   procedureCodes: [String!]!
@@ -75,11 +74,11 @@ type Claim @key(fields: "id") {
 type PaymentError @key(fields: "id") {
   id: ID!
   claimId: String!
-  errorType: ErrorType!
+  errorType: PaymentErrorType!
   errorCode: String!
   description: String!
   severity: ErrorSeverity!
-  detectedAt: DateTime!
+  detectedAt: String!
   resolved: Boolean!
 }
 
@@ -89,7 +88,7 @@ type FraudAlert @key(fields: "id") {
   fraudType: FraudType!
   description: String!
   riskScore: BigDecimal!
-  detectedAt: DateTime!
+  detectedAt: String!
   status: AlertStatus!
   indicators: [String!]!
 }
@@ -100,8 +99,8 @@ type AbusePattern @key(fields: "id") {
   abuseType: AbuseType!
   description: String!
   occurrenceCount: Int!
-  firstDetectedAt: DateTime!
-  lastDetectedAt: DateTime!
+  firstDetectedAt: String!
+  lastDetectedAt: String!
   affectedClaims: [String!]!
 }
 

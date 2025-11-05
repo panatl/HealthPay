@@ -1,6 +1,6 @@
 # HealthPay - Healthcare Claims Fraud Detection System
 
-A Spring Boot Reactive Microservices application for detecting payment errors, fraud, and abuse in healthcare claims processing, exposed through GraphQL Federation Spec 2.9.
+A Spring Boot Reactive Microservices application for detecting payment errors, fraud, and abuse in healthcare claims processing, exposed through GraphQL Federation Spec 2.0.
 
 ## Features
 
@@ -26,7 +26,7 @@ A Spring Boot Reactive Microservices application for detecting payment errors, f
   - Inappropriate coding
   - Excessive charges
 
-- **GraphQL Federation 2.9**: Implements Apollo Federation v2.9 specification for distributed GraphQL architecture
+- **GraphQL Federation 2.0**: Implements Apollo Federation v2.0 specification for distributed GraphQL architecture
 
 - **Reactive Programming**: Built with Spring WebFlux and Project Reactor for non-blocking, reactive processing
 
@@ -35,7 +35,7 @@ A Spring Boot Reactive Microservices application for detecting payment errors, f
 - **Spring Boot 3.2.0**: Core framework
 - **Spring WebFlux**: Reactive web framework
 - **Netflix DGS 8.1.1**: GraphQL framework with Federation support
-- **Apollo Federation 4.3.0**: GraphQL Federation implementation
+- **Apollo Federation 3.0.0**: GraphQL Federation implementation
 - **Project Reactor**: Reactive programming library
 - **Java 17**: Programming language
 - **Gradle 8.4**: Build tool
@@ -252,7 +252,45 @@ src/
 
 ## Federation Support
 
-This service implements Apollo Federation v2.9 specification, enabling it to be part of a larger federated GraphQL architecture. Entity types are marked with `@key` directives and can be extended by other services.
+This service implements Apollo Federation v2.0 specification, enabling it to be part of a larger federated GraphQL architecture. Entity types are marked with `@key` directives and can be extended by other services.
+
+## Example Usage
+
+### Detect Fraud in a High-Value Claim
+
+```bash
+# Submit a high-value claim
+curl -X POST http://localhost:8080/graphql \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mutation { submitClaim(patientId: \"patient-999\", providerId: \"provider-999\", amount: \"25000.00\", diagnosisCodes: [\"D999\"], procedureCodes: [\"P999\"], serviceDate: \"2024-01-20\") { id } }"
+  }'
+
+# Process the claim - will trigger fraud alert
+curl -X POST http://localhost:8080/graphql \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mutation { processClaim(claimId: \"CLAIM_ID_FROM_ABOVE\") { status fraudAlerts { fraudType riskScore indicators } } }"
+  }'
+```
+
+### Detect Payment Errors
+
+```bash
+# Submit a claim with invalid data
+curl -X POST http://localhost:8080/graphql \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mutation { submitClaim(patientId: \"patient-123\", providerId: \"provider-456\", amount: \"-100.00\", diagnosisCodes: [], procedureCodes: [\"P001\"], serviceDate: \"2024-01-15\") { id } }"
+  }'
+
+# Process the claim - will detect payment errors
+curl -X POST http://localhost:8080/graphql \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mutation { processClaim(claimId: \"CLAIM_ID_FROM_ABOVE\") { status paymentErrors { errorType severity description } } }"
+  }'
+```
 
 ## License
 
