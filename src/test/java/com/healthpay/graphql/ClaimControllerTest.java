@@ -9,19 +9,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ClaimDataFetcherTest {
+class ClaimControllerTest {
 
     @Mock
     private FraudDetectionService fraudDetectionService;
@@ -39,10 +37,10 @@ class ClaimDataFetcherTest {
     private AbusePatternRepository abusePatternRepository;
 
     @InjectMocks
-    private ClaimDataFetcher claimDataFetcher;
+    private ClaimController claimController;
 
     @Test
-    void testSubmitClaimMutation() throws Exception {
+    void testSubmitClaim() {
         // Arrange
         Claim claim = Claim.builder()
                 .id("claim-123")
@@ -61,7 +59,7 @@ class ClaimDataFetcherTest {
         )).thenReturn(Mono.just(claim));
 
         // Act
-        CompletableFuture<Claim> result = claimDataFetcher.submitClaim(
+        Mono<Claim> result = claimController.submitClaim(
                 "patient-123",
                 "provider-456",
                 new BigDecimal("5000.00"),
@@ -71,9 +69,36 @@ class ClaimDataFetcherTest {
         );
 
         // Assert
-        Claim resultClaim = result.get();
+        Claim resultClaim = result.block();
+        assertNotNull(resultClaim);
         assertEquals("patient-123", resultClaim.getPatientId());
         assertEquals("provider-456", resultClaim.getProviderId());
         assertEquals(new BigDecimal("5000.00"), resultClaim.getAmount());
+    }
+
+    @Test
+    void testGetClaim() {
+        // Arrange
+        Claim claim = Claim.builder()
+                .id("claim-123")
+                .patientId("patient-123")
+                .providerId("provider-456")
+                .amount(new BigDecimal("5000.00"))
+                .status(ClaimStatus.SUBMITTED)
+                .submittedAt(LocalDateTime.now())
+                .diagnosisCodes(List.of("D001"))
+                .procedureCodes(List.of("P001"))
+                .serviceDate("2024-01-15")
+                .build();
+
+        when(claimRepository.findById("claim-123")).thenReturn(Mono.just(claim));
+
+        // Act
+        Mono<Claim> result = claimController.claim("claim-123");
+
+        // Assert
+        Claim resultClaim = result.block();
+        assertNotNull(resultClaim);
+        assertEquals("claim-123", resultClaim.getId());
     }
 }

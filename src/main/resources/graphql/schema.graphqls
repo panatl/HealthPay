@@ -1,6 +1,3 @@
-extend schema 
-  @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@external", "@requires", "@provides"])
-
 scalar BigDecimal
 
 enum ClaimStatus {
@@ -57,7 +54,7 @@ enum AbuseType {
   EXCESSIVE_CHARGES
 }
 
-type Claim @key(fields: "id") {
+type Claim {
   id: ID!
   patientId: String!
   providerId: String!
@@ -71,7 +68,7 @@ type Claim @key(fields: "id") {
   fraudAlerts: [FraudAlert!]!
 }
 
-type PaymentError @key(fields: "id") {
+type PaymentError {
   id: ID!
   claimId: String!
   errorType: PaymentErrorType!
@@ -82,7 +79,7 @@ type PaymentError @key(fields: "id") {
   resolved: Boolean!
 }
 
-type FraudAlert @key(fields: "id") {
+type FraudAlert {
   id: ID!
   claimId: String!
   fraudType: FraudType!
@@ -93,7 +90,7 @@ type FraudAlert @key(fields: "id") {
   indicators: [String!]!
 }
 
-type AbusePattern @key(fields: "id") {
+type AbusePattern {
   id: ID!
   providerId: String!
   abuseType: AbuseType!

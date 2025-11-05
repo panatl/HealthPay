@@ -34,29 +34,29 @@ A Spring Boot Reactive Microservices application for detecting payment errors, f
 
 - **Spring Boot 3.2.0**: Core framework
 - **Spring WebFlux**: Reactive web framework
-- **Netflix DGS 8.1.1**: GraphQL framework with Federation support
-- **Apollo Federation 3.0.0**: GraphQL Federation implementation
+- **Spring for GraphQL**: Official Spring GraphQL support
+- **Apollo Federation 4.3.0**: GraphQL Federation implementation
 - **Project Reactor**: Reactive programming library
 - **Java 17**: Programming language
-- **Gradle 8.4**: Build tool
+- **Maven**: Build tool
 
 ## Getting Started
 
 ### Prerequisites
 
 - Java 17 or higher
-- Gradle 8.4 or higher (or use included wrapper)
+- Maven 3.6 or higher
 
 ### Building the Application
 
 ```bash
-./gradlew build
+mvn clean package
 ```
 
 ### Running the Application
 
 ```bash
-./gradlew bootRun
+mvn spring-boot:run
 ```
 
 The application will start on port 8080.
@@ -230,7 +230,7 @@ fraud:
 Run all tests:
 
 ```bash
-./gradlew test
+mvn test
 ```
 
 ## Project Structure

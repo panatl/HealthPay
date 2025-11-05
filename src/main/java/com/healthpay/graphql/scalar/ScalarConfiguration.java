@@ -1,23 +1,24 @@
 package com.healthpay.graphql.scalar;
 
-import com.netflix.graphql.dgs.DgsComponent;
-import com.netflix.graphql.dgs.DgsRuntimeWiring;
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
 import graphql.schema.CoercingSerializeException;
 import graphql.schema.GraphQLScalarType;
-import graphql.schema.idl.RuntimeWiring;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.graphql.execution.RuntimeWiringConfigurer;
 
 import java.math.BigDecimal;
 
-@DgsComponent
-public class CustomScalars {
+@Configuration
+public class ScalarConfiguration {
 
-    @DgsRuntimeWiring
-    public RuntimeWiring.Builder addScalars(RuntimeWiring.Builder builder) {
-        return builder.scalar(bigDecimalScalar());
+    @Bean
+    public RuntimeWiringConfigurer runtimeWiringConfigurer() {
+        return wiringBuilder -> wiringBuilder
+                .scalar(bigDecimalScalar());
     }
 
     private GraphQLScalarType bigDecimalScalar() {

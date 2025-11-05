@@ -7,14 +7,10 @@ spring:
   graphql:
     graphiql:
       enabled: true
-      path: /graphiql
     path: /graphql
-
-dgs:
-  graphql:
-    graphiql:
-      enabled: true
-    path: /graphql
+    schema:
+      locations: classpath:graphql/
+      file-extensions: .graphqls
 
 # Fraud detection thresholds
 fraud:
