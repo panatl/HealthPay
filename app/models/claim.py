@@ -47,8 +47,9 @@ class Claim(BaseModel):
     @field_validator('submission_date')
     @classmethod
     def submission_after_service(cls, v: datetime, info) -> datetime:
-        if 'service_date' in info.data and v < info.data['service_date']:
-            raise ValueError("Submission date must be after service date")
+        if info.data and 'service_date' in info.data and info.data['service_date']:
+            if v < info.data['service_date']:
+                raise ValueError("Submission date must be after service date")
         return v
 
 

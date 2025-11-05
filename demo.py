@@ -175,8 +175,10 @@ if __name__ == "__main__":
     
     try:
         # Test health
-        response = requests.get(f"{BASE_URL}/health")
-        print(f"Server Status: {response.json()['status']}")
+        response = requests.get(f"{BASE_URL}/health", timeout=5)
+        response.raise_for_status()
+        health_data = response.json()
+        print(f"Server Status: {health_data.get('status', 'unknown')}")
         
         # Run tests
         test_payment_integrity()
@@ -191,5 +193,11 @@ if __name__ == "__main__":
         print("\nError: Could not connect to server.")
         print("Please start the server first with:")
         print("  python -m uvicorn app.main:app --reload")
+    except requests.exceptions.Timeout:
+        print("\nError: Server health check timed out.")
+        print("Please ensure the server is running properly.")
+    except requests.exceptions.RequestException as e:
+        print(f"\nError: Failed to connect to server: {e}")
+        print("Please ensure the server is running at http://localhost:8000")
     except Exception as e:
         print(f"\nError: {e}")
