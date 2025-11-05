@@ -1,0 +1,117 @@
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@shareable", "@external"])
+
+type Query {
+    analyzeClaim(input: ClaimInput!): ClaimAnalysisResult!
+    batchAnalyzeClaims(inputs: [ClaimInput!]!): [ClaimAnalysisResult!]!
+    checkDuplicates(claims: [ClaimInput!]!): DuplicateCheckResult!
+    getClaim(claimId: ID!): Claim
+    getClaimAnalysis(claimId: ID!): ClaimAnalysisResult
+}
+
+type Mutation {
+    submitClaim(input: ClaimInput!): Claim!
+    calculateAllowedAmount(claimId: ID!, feeSchedule: [FeeScheduleInput!]!): AllowedAmountResult!
+}
+
+type Claim @key(fields: "claimId") {
+    claimId: ID!
+    patientId: String!
+    providerId: String!
+    claimType: ClaimType!
+    serviceDate: DateTime!
+    submissionDate: DateTime!
+    services: [ServiceCode!]!
+    claimedAmount: Float!
+    allowedAmount: Float
+    paidAmount: Float
+    status: ClaimStatus!
+    diagnosisCodes: [String!]!
+}
+
+type ServiceCode {
+    code: String!
+    description: String!
+    units: Int!
+    unitPrice: Float!
+}
+
+type ClaimAnalysisResult @key(fields: "claimId") {
+    claimId: ID!
+    isValid: Boolean!
+    issues: [PaymentIntegrityIssue!]!
+    totalEstimatedImpact: Float!
+    riskScore: Float!
+    analysisTimestamp: DateTime!
+}
+
+type PaymentIntegrityIssue {
+    issueType: String!
+    severity: Severity!
+    description: String!
+    estimatedImpact: Float!
+    recommendation: String!
+}
+
+type DuplicateCheckResult {
+    duplicateGroups: [[ID!]!]!
+    totalDuplicateGroups: Int!
+    totalClaimsChecked: Int!
+}
+
+type AllowedAmountResult {
+    claimId: ID!
+    claimedAmount: Float!
+    calculatedAllowedAmount: Float!
+    difference: Float!
+}
+
+input ClaimInput {
+    claimId: ID!
+    patientId: String!
+    providerId: String!
+    claimType: ClaimType!
+    serviceDate: DateTime!
+    submissionDate: DateTime!
+    services: [ServiceCodeInput!]!
+    claimedAmount: Float!
+    allowedAmount: Float
+    paidAmount: Float
+    status: ClaimStatus
+    diagnosisCodes: [String!]!
+}
+
+input ServiceCodeInput {
+    code: String!
+    description: String!
+    units: Int!
+    unitPrice: Float!
+}
+
+input FeeScheduleInput {
+    code: String!
+    allowedAmount: Float!
+}
+
+enum ClaimType {
+    INPATIENT
+    OUTPATIENT
+    PHARMACY
+    PROFESSIONAL
+    DENTAL
+}
+
+enum ClaimStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    UNDER_REVIEW
+}
+
+enum Severity {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+}
+
+scalar DateTime

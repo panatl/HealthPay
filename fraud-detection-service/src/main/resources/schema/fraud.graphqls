@@ -1,0 +1,79 @@
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@shareable", "@external"])
+
+type Query {
+    analyzeFraud(claims: [ClaimInput!]!): [FraudAlert!]!
+    getProviderRiskScore(providerId: ID!): ProviderRiskScore!
+    getFraudAlerts(status: String): [FraudAlert!]!
+}
+
+type FraudAlert @key(fields: "alertId") {
+    alertId: ID!
+    claimIds: [ID!]!
+    alertType: FraudAlertType!
+    confidenceScore: Float!
+    patternDescription: String!
+    flaggedDate: DateTime!
+    status: AlertStatus!
+}
+
+type ProviderRiskScore @key(fields: "providerId") {
+    providerId: ID!
+    riskScore: Float!
+    riskLevel: RiskLevel!
+}
+
+type Claim @key(fields: "claimId") @external {
+    claimId: ID! @external
+}
+
+input ClaimInput {
+    claimId: ID!
+    patientId: String!
+    providerId: String!
+    claimType: ClaimType!
+    serviceDate: DateTime!
+    submissionDate: DateTime!
+    services: [ServiceCodeInput!]!
+    claimedAmount: Float!
+    diagnosisCodes: [String!]!
+}
+
+input ServiceCodeInput {
+    code: String!
+    description: String!
+    units: Int!
+    unitPrice: Float!
+}
+
+enum FraudAlertType {
+    DUPLICATE_BILLING
+    HIGH_VOLUME_BILLING
+    HIGH_AVERAGE_CLAIMS
+    SERVICE_CODE_CONCENTRATION
+    DOCTOR_SHOPPING
+    MULTIPLE_SERVICES_SAME_DAY
+}
+
+enum AlertStatus {
+    OPEN
+    INVESTIGATING
+    CLOSED
+    FALSE_POSITIVE
+}
+
+enum RiskLevel {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+}
+
+enum ClaimType {
+    INPATIENT
+    OUTPATIENT
+    PHARMACY
+    PROFESSIONAL
+    DENTAL
+}
+
+scalar DateTime

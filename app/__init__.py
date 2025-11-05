@@ -1,1 +1,0 @@
-# HealthPay Payment Integrity Platform

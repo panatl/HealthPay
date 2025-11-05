@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: claims-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/healthpay
+      database: healthpay
+  graphql:
+    federation:
+      enabled: true
+
+server:
+  port: 8081
+
+dgs:
+  graphql:
+    path: /graphql
+    schema-locations: classpath*:schema/**/*.graphqls
+    
+logging:
+  level:
+    com.healthpay: DEBUG
+    com.netflix.graphql.dgs: DEBUG

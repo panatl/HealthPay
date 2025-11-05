@@ -1,6 +1,26 @@
 # HealthPay Payment Integrity Platform
 
-A comprehensive Healthcare Payment Integrity & Analytics platform that ensures claims are paid correctly by identifying overpayments, underpayments, errors, fraud, waste, and abuse in healthcare claims.
+A comprehensive Healthcare Payment Integrity & Analytics platform built with **Spring Boot Reactive Microservices** and **Apollo GraphQL Federation Spec 2.9**. The platform ensures claims are paid correctly by identifying overpayments, underpayments, errors, fraud, waste, and abuse in healthcare claims.
+
+## Architecture
+
+### Microservices Architecture
+The platform is built as a federated microservices architecture using Apollo Federation 2.9:
+
+- **Claims Service** (Port 8081) - Payment integrity analysis and claims validation
+- **Fraud Detection Service** (Port 8082) - Fraud, waste, and abuse detection
+- **Analytics Service** (Port 8083) - Analytics and reporting
+- **Apollo Gateway** (Port 4000) - Unified GraphQL API gateway
+
+### Technology Stack
+
+- **Framework**: Spring Boot 3.2.0 with WebFlux (Reactive)
+- **GraphQL**: Netflix DGS Framework with Apollo Federation 2.9
+- **Database**: MongoDB (Reactive)
+- **API Gateway**: Apollo Gateway with Federation
+- **Language**: Java 17
+- **Build Tool**: Maven
+- **Containerization**: Docker & Docker Compose
 
 ## Features
 
@@ -28,20 +48,16 @@ A comprehensive Healthcare Payment Integrity & Analytics platform that ensures c
 - Measure cost efficiency and savings
 - Monitor claims by status and type
 
-### ⚙️ Key Capabilities
-- Analyze individual or batch claims
-- Detect duplicate claims across submissions
-- Calculate allowed amounts based on fee schedules
-- Real-time fraud alerts
-- RESTful API with comprehensive documentation
-
 ## Getting Started
 
 ### Prerequisites
-- Python 3.8 or higher
-- pip (Python package manager)
+- Java 17 or higher
+- Maven 3.8+
+- Docker & Docker Compose
+- Node.js 20+ (for Apollo Gateway)
+- MongoDB 7.0
 
-### Installation
+### Quick Start with Docker
 
 1. Clone the repository:
 ```bash
@@ -49,169 +65,253 @@ git clone https://github.com/panatl/HealthPay.git
 cd HealthPay
 ```
 
-2. Install dependencies:
+2. Start all services with Docker Compose:
 ```bash
-pip install -r requirements.txt
+docker-compose up --build
 ```
 
-### Running the Application
+This will start:
+- MongoDB on port 27017
+- Claims Service on port 8081
+- Fraud Detection Service on port 8082
+- Analytics Service on port 8083
+- Apollo Gateway on port 4000
 
-Start the server:
-```bash
-python -m uvicorn app.main:app --reload
+3. Access the GraphQL Playground:
+```
+http://localhost:4000/graphql
 ```
 
-The API will be available at `http://localhost:8000`
+### Local Development
 
-### API Documentation
-
-Once the server is running, access the interactive API documentation:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
-## API Endpoints
-
-### Payment Integrity
-- `POST /api/v1/claims/analyze` - Analyze a single claim
-- `POST /api/v1/claims/batch-analyze` - Analyze multiple claims
-- `POST /api/v1/claims/check-duplicates` - Check for duplicate claims
-- `POST /api/v1/claims/calculate-allowed` - Calculate allowed amount
-
-### Fraud Detection
-- `POST /api/v1/fraud/analyze` - Analyze claims for fraud patterns
-- `GET /api/v1/fraud/provider-risk/{provider_id}` - Get provider risk score
-- `GET /api/v1/fraud/alerts` - Get fraud alerts
-
-### Analytics
-- `POST /api/v1/analytics/summary` - Generate analytics summary
-- `POST /api/v1/analytics/top-providers` - Get top providers
-- `POST /api/v1/analytics/top-services` - Get top service codes
-- `POST /api/v1/analytics/payment-accuracy` - Calculate payment accuracy
-- `POST /api/v1/analytics/cost-efficiency` - Calculate cost efficiency
-
-### Claims Management
-- `GET /api/v1/claims/{claim_id}` - Get claim by ID
-- `GET /api/v1/claims/{claim_id}/analysis` - Get claim analysis results
-
-## Usage Examples
-
-### Analyze a Claim
+#### Build Individual Services
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/claims/analyze" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "claim_id": "CLM001",
-    "patient_id": "PAT001",
-    "provider_id": "PRV001",
-    "claim_type": "outpatient",
-    "service_date": "2024-01-15T10:00:00Z",
-    "submission_date": "2024-01-20T10:00:00Z",
-    "services": [
-      {
-        "code": "99213",
-        "description": "Office visit",
-        "units": 1,
-        "unit_price": 150.00
-      }
-    ],
-    "claimed_amount": 150.00,
-    "allowed_amount": 150.00,
-    "paid_amount": 150.00,
-    "status": "approved",
-    "diagnosis_codes": ["I10"]
-  }'
+# Claims Service
+cd claims-service
+mvn clean install
+mvn spring-boot:run
+
+# Fraud Detection Service
+cd fraud-detection-service
+mvn clean install
+mvn spring-boot:run
+
+# Analytics Service
+cd analytics-service
+mvn clean install
+mvn spring-boot:run
+
+# Apollo Gateway
+cd apollo-gateway
+npm install
+npm start
 ```
 
-### Detect Fraud Patterns
+## GraphQL API
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/fraud/analyze" \
-  -H "Content-Type: application/json" \
-  -d '[
-    {
-      "claim_id": "CLM001",
-      "patient_id": "PAT001",
-      "provider_id": "PRV001",
-      ...
-    },
-    {
-      "claim_id": "CLM002",
-      "patient_id": "PAT001",
-      "provider_id": "PRV001",
-      ...
+The platform exposes a unified GraphQL API through Apollo Gateway with Federation 2.9 support.
+
+### Example Queries
+
+#### Analyze a Claim
+
+```graphql
+mutation AnalyzeClaim {
+  analyzeClaim(input: {
+    claimId: "CLM001"
+    patientId: "PAT001"
+    providerId: "PRV001"
+    claimType: OUTPATIENT
+    serviceDate: "2024-01-15T10:00:00Z"
+    submissionDate: "2024-01-20T10:00:00Z"
+    services: [{
+      code: "99213"
+      description: "Office visit"
+      units: 1
+      unitPrice: 150.00
+    }]
+    claimedAmount: 150.00
+    allowedAmount: 100.00
+    paidAmount: 150.00
+    status: APPROVED
+    diagnosisCodes: ["I10"]
+  }) {
+    claimId
+    isValid
+    riskScore
+    totalEstimatedImpact
+    issues {
+      issueType
+      severity
+      description
+      estimatedImpact
+      recommendation
     }
-  ]'
+  }
+}
 ```
 
-### Generate Analytics Summary
+#### Detect Fraud Patterns
 
-```bash
-curl -X POST "http://localhost:8000/api/v1/analytics/summary" \
-  -H "Content-Type: application/json" \
-  -d '[...]'
+```graphql
+query AnalyzeFraud {
+  analyzeFraud(claims: [
+    {
+      claimId: "CLM001"
+      patientId: "PAT001"
+      providerId: "PRV001"
+      claimType: PHARMACY
+      serviceDate: "2024-01-15T10:00:00Z"
+      submissionDate: "2024-01-20T10:00:00Z"
+      services: [{code: "J2001", description: "Medication", units: 1, unitPrice: 150.00}]
+      claimedAmount: 150.00
+      diagnosisCodes: ["M79.3"]
+    }
+  ]) {
+    alertId
+    alertType
+    confidenceScore
+    patternDescription
+    status
+    claimIds
+  }
+}
 ```
 
-## Architecture
+#### Generate Analytics Summary
 
-The platform consists of three main services:
+```graphql
+query GetAnalytics {
+  getAnalyticsSummary(claims: [
+    {
+      claimId: "CLM001"
+      patientId: "PAT001"
+      providerId: "PRV001"
+      claimType: OUTPATIENT
+      claimedAmount: 150.00
+      paidAmount: 150.00
+      status: APPROVED
+    }
+  ]) {
+    totalClaims
+    totalClaimedAmount
+    totalPaidAmount
+    averageRiskScore
+    claimsByStatus {
+      status
+      count
+    }
+    claimsByType {
+      claimType
+      count
+    }
+  }
+}
+```
 
-1. **Payment Integrity Service** (`app/services/payment_integrity.py`)
-   - Analyzes claims for payment accuracy
-   - Detects overpayments, underpayments, and errors
-   - Validates claim data and pricing
+### Get Provider Risk Score
 
-2. **Fraud Detection Service** (`app/services/fraud_detection.py`)
-   - Identifies fraud, waste, and abuse patterns
-   - Monitors provider and patient behavior
-   - Generates fraud alerts with confidence scores
+```graphql
+query GetProviderRisk {
+  getProviderRiskScore(providerId: "PRV001") {
+    providerId
+    riskScore
+    riskLevel
+  }
+}
+```
 
-3. **Analytics Service** (`app/services/analytics.py`)
-   - Generates comprehensive reports
-   - Calculates key performance metrics
-   - Provides insights on payment efficiency
+## Apollo Federation
 
-## Data Models
+The platform implements Apollo Federation 2.9 specification with:
 
-### Claim
-- `claim_id`: Unique identifier
-- `patient_id`: Patient identifier
-- `provider_id`: Healthcare provider identifier
-- `claim_type`: Type of claim (inpatient, outpatient, etc.)
-- `service_date`: Date of service
-- `services`: List of medical services/procedures
-- `claimed_amount`: Total amount claimed
-- `allowed_amount`: Amount allowed per policy
-- `paid_amount`: Amount actually paid
-- `status`: Claim status
-- `diagnosis_codes`: ICD diagnosis codes
+- **`@key` directive**: Entity key definitions for federated types
+- **`@external` directive**: External field references across subgraphs
+- **`@shareable` directive**: Shareable fields across services
+- **Type extensions**: Extending types from other subgraphs
 
-### Payment Integrity Issue
-- `issue_type`: Type of issue (overpayment, underpayment, etc.)
-- `severity`: Severity level (low, medium, high, critical)
-- `description`: Detailed description
-- `estimated_impact`: Financial impact
-- `recommendation`: Recommended action
+### Federated Schema Example
 
-### Fraud Alert
-- `alert_id`: Unique alert identifier
-- `claim_ids`: Related claims
-- `alert_type`: Type of fraud/waste/abuse
-- `confidence_score`: Confidence level (0-1)
-- `pattern_description`: Description of pattern
-- `status`: Alert status
+```graphql
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.9", 
+                   import: ["@key", "@shareable", "@external"])
+
+type Claim @key(fields: "claimId") {
+  claimId: ID!
+  patientId: String!
+  # ... other fields
+}
+```
+
+## Service Endpoints
+
+### Individual Service GraphQL Endpoints
+
+- **Claims Service**: http://localhost:8081/graphql
+- **Fraud Detection**: http://localhost:8082/graphql
+- **Analytics Service**: http://localhost:8083/graphql
+
+### Unified Gateway
+
+- **Apollo Gateway**: http://localhost:4000/graphql
+- **GraphQL Playground**: http://localhost:4000
+
+## Configuration
+
+Each service can be configured via `application.yml`:
+
+```yaml
+spring:
+  application:
+    name: claims-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/healthpay
+
+server:
+  port: 8081
+
+dgs:
+  graphql:
+    path: /graphql
+```
 
 ## Testing
 
-Run the test suite:
+Run tests for each service:
+
 ```bash
-pytest
+# Claims Service
+cd claims-service
+mvn test
+
+# Fraud Detection Service
+cd fraud-detection-service
+mvn test
+
+# Analytics Service
+cd analytics-service
+mvn test
 ```
 
-Run tests with coverage:
+## Deployment
+
+### Docker Compose
+
 ```bash
-pytest --cov=app tests/
+docker-compose up -d
 ```
+
+### Kubernetes
+
+Kubernetes manifests can be generated using the provided Docker images.
+
+## Monitoring
+
+- Spring Boot Actuator endpoints available at `/actuator`
+- GraphQL schema introspection at `/graphql`
+- Health checks at `/actuator/health`
 
 ## Contributing
 

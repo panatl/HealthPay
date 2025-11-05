@@ -1,20 +1,81 @@
 version: '3.8'
 
 services:
-  healthpay-api:
-    build: .
+  mongodb:
+    image: mongo:7.0
+    container_name: healthpay-mongodb
     ports:
-      - "8000:8000"
+      - "27017:27017"
     environment:
-      - LOG_LEVEL=INFO
-      - HOST=0.0.0.0
-      - PORT=8000
+      MONGO_INITDB_DATABASE: healthpay
     volumes:
-      - ./app:/app/app
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - mongodb_data:/data/db
+    networks:
+      - healthpay-network
+
+  claims-service:
+    build:
+      context: ./claims-service
+      dockerfile: Dockerfile
+    container_name: claims-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/healthpay
+      SERVER_PORT: 8081
+    depends_on:
+      - mongodb
+    networks:
+      - healthpay-network
+
+  fraud-detection-service:
+    build:
+      context: ./fraud-detection-service
+      dockerfile: Dockerfile
+    container_name: fraud-detection-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/healthpay
+      SERVER_PORT: 8082
+    depends_on:
+      - mongodb
+    networks:
+      - healthpay-network
+
+  analytics-service:
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    container_name: analytics-service
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+    networks:
+      - healthpay-network
+
+  apollo-gateway:
+    build:
+      context: ./apollo-gateway
+      dockerfile: Dockerfile
+    container_name: apollo-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      CLAIMS_SERVICE_URL: http://claims-service:8081/graphql
+      FRAUD_SERVICE_URL: http://fraud-detection-service:8082/graphql
+      ANALYTICS_SERVICE_URL: http://analytics-service:8083/graphql
+    depends_on:
+      - claims-service
+      - fraud-detection-service
+      - analytics-service
+    networks:
+      - healthpay-network
+
+networks:
+  healthpay-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

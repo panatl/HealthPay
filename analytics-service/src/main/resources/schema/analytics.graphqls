@@ -1,0 +1,76 @@
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@shareable"])
+
+type Query {
+    getAnalyticsSummary(claims: [ClaimInput!]): AnalyticsSummary!
+    getTopProviders(claims: [ClaimInput!]!, limit: Int): [ProviderSummary!]!
+    getPaymentAccuracy(claims: [ClaimInput!]!): PaymentAccuracyResult!
+    getCostEfficiency(claims: [ClaimInput!]!): CostEfficiencyResult!
+}
+
+type AnalyticsSummary {
+    totalClaims: Int!
+    totalClaimedAmount: Float!
+    totalPaidAmount: Float!
+    totalIssuesFound: Int!
+    estimatedOverpayment: Float!
+    estimatedUnderpayment: Float!
+    fraudAlertsCount: Int!
+    averageRiskScore: Float!
+    claimsByStatus: [StatusCount!]!
+    claimsByType: [TypeCount!]!
+}
+
+type StatusCount {
+    status: String!
+    count: Int!
+}
+
+type TypeCount {
+    claimType: String!
+    count: Int!
+}
+
+type ProviderSummary {
+    providerId: ID!
+    totalAmount: Float!
+    claimCount: Int!
+}
+
+type PaymentAccuracyResult {
+    paymentAccuracyRate: Float!
+    totalClaimsEvaluated: Int!
+}
+
+type CostEfficiencyResult {
+    totalClaimed: Float!
+    totalPaid: Float!
+    totalAllowed: Float!
+    totalSavings: Float!
+    savingsRatePercent: Float!
+}
+
+input ClaimInput {
+    claimId: ID!
+    patientId: String!
+    providerId: String!
+    claimType: ClaimType!
+    claimedAmount: Float!
+    allowedAmount: Float
+    paidAmount: Float
+    status: ClaimStatus
+}
+
+enum ClaimType {
+    INPATIENT
+    OUTPATIENT
+    PHARMACY
+    PROFESSIONAL
+    DENTAL
+}
+
+enum ClaimStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    UNDER_REVIEW
+}

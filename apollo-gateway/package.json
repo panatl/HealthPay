@@ -1,0 +1,19 @@
+{
+  "name": "healthpay-apollo-gateway",
+  "version": "1.0.0",
+  "description": "Apollo Federation Gateway for HealthPay Platform",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "@apollo/gateway": "^2.9.0",
+    "@apollo/server": "^4.10.0",
+    "graphql": "^16.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
