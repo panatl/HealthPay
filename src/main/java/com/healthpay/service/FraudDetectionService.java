@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -165,7 +166,7 @@ public class FraudDetectionService {
     private Mono<FraudAlert> checkExcessiveAmount(Claim claim) {
         if (claim.getAmount().compareTo(HIGH_AMOUNT_THRESHOLD) > 0) {
             BigDecimal riskScore = claim.getAmount()
-                    .divide(HIGH_AMOUNT_THRESHOLD, 2, BigDecimal.ROUND_HALF_UP)
+                    .divide(HIGH_AMOUNT_THRESHOLD, 2, RoundingMode.HALF_UP)
                     .multiply(new BigDecimal("50"));
             
             return Mono.just(FraudAlert.builder()
