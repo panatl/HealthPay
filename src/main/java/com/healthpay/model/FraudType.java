@@ -1,0 +1,12 @@
+package com.healthpay.model;
+
+public enum FraudType {
+    PHANTOM_BILLING,
+    UPCODING,
+    UNBUNDLING,
+    DUPLICATE_BILLING,
+    EXCESSIVE_SERVICES,
+    KICKBACK_SCHEME,
+    IDENTITY_THEFT,
+    FALSE_DIAGNOSIS
+}
