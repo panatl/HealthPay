@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: healthpay-fraud-detection
+  graphql:
+    graphiql:
+      enabled: true
+    path: /graphql
+    schema:
+      locations: classpath:graphql/
+      file-extensions: .graphqls
+
+# Fraud detection thresholds
+fraud:
+  detection:
+    amount-threshold: 10000.00
+    frequency-threshold: 5
+    duplicate-check-window-hours: 24
+
+logging:
+  level:
+    com.healthpay: DEBUG
+    org.springframework: INFO

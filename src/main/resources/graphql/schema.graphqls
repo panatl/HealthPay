@@ -1,0 +1,149 @@
+scalar BigDecimal
+
+enum ClaimStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  FLAGGED_FOR_FRAUD
+  APPROVED
+  REJECTED
+  REQUIRES_MANUAL_REVIEW
+}
+
+enum PaymentErrorType {
+  DUPLICATE_CLAIM
+  INVALID_AMOUNT
+  MISSING_INFORMATION
+  PROVIDER_NOT_AUTHORIZED
+  PATIENT_NOT_ELIGIBLE
+  SERVICE_NOT_COVERED
+  CODING_ERROR
+  BILLING_DISCREPANCY
+}
+
+enum ErrorSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FraudType {
+  PHANTOM_BILLING
+  UPCODING
+  UNBUNDLING
+  DUPLICATE_BILLING
+  EXCESSIVE_SERVICES
+  KICKBACK_SCHEME
+  IDENTITY_THEFT
+  FALSE_DIAGNOSIS
+}
+
+enum AlertStatus {
+  OPEN
+  INVESTIGATING
+  CONFIRMED
+  DISMISSED
+  ESCALATED
+}
+
+enum AbuseType {
+  OVER_UTILIZATION
+  PATTERN_OF_ERRORS
+  UNNECESSARY_SERVICES
+  INAPPROPRIATE_CODING
+  EXCESSIVE_CHARGES
+}
+
+type Claim {
+  id: ID!
+  patientId: String!
+  providerId: String!
+  amount: BigDecimal!
+  submittedAt: String!
+  status: ClaimStatus!
+  diagnosisCodes: [String!]!
+  procedureCodes: [String!]!
+  serviceDate: String!
+  paymentErrors: [PaymentError!]!
+  fraudAlerts: [FraudAlert!]!
+}
+
+type PaymentError {
+  id: ID!
+  claimId: String!
+  errorType: PaymentErrorType!
+  errorCode: String!
+  description: String!
+  severity: ErrorSeverity!
+  detectedAt: String!
+  resolved: Boolean!
+}
+
+type FraudAlert {
+  id: ID!
+  claimId: String!
+  fraudType: FraudType!
+  description: String!
+  riskScore: BigDecimal!
+  detectedAt: String!
+  status: AlertStatus!
+  indicators: [String!]!
+}
+
+type AbusePattern {
+  id: ID!
+  providerId: String!
+  abuseType: AbuseType!
+  description: String!
+  occurrenceCount: Int!
+  firstDetectedAt: String!
+  lastDetectedAt: String!
+  affectedClaims: [String!]!
+}
+
+type Query {
+  "Get a claim by ID"
+  claim(id: ID!): Claim
+  
+  "Get all claims"
+  claims: [Claim!]!
+  
+  "Get payment errors for a specific claim"
+  paymentErrors(claimId: String!): [PaymentError!]!
+  
+  "Get all payment errors"
+  allPaymentErrors: [PaymentError!]!
+  
+  "Get fraud alerts for a specific claim"
+  fraudAlerts(claimId: String!): [FraudAlert!]!
+  
+  "Get all fraud alerts"
+  allFraudAlerts: [FraudAlert!]!
+  
+  "Get abuse patterns for a specific provider"
+  abusePatterns(providerId: String!): [AbusePattern!]!
+  
+  "Get all abuse patterns"
+  allAbusePatterns: [AbusePattern!]!
+}
+
+type Mutation {
+  "Submit a new claim for processing"
+  submitClaim(
+    patientId: String!
+    providerId: String!
+    amount: BigDecimal!
+    diagnosisCodes: [String!]!
+    procedureCodes: [String!]!
+    serviceDate: String!
+  ): Claim!
+  
+  "Process a claim for fraud detection"
+  processClaim(claimId: ID!): Claim!
+  
+  "Resolve a payment error"
+  resolvePaymentError(errorId: ID!): PaymentError!
+  
+  "Update fraud alert status"
+  updateFraudAlertStatus(alertId: ID!, status: AlertStatus!): FraudAlert!
+}
